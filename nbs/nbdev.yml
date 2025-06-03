@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "ombs_senegal"
+  site-url: "https://iraind.github.io/ombs_senegal"
+  description: "OMBS Senegal codebase"
+  repo-branch: main
+  repo-url: "https://github.com/iraind/ombs_senegal"
