@@ -5,4 +5,5 @@ d = { 'settings': { 'branch': 'main',
                 'doc_host': 'https://iraind.github.io',
                 'git_url': 'https://github.com/iraind/ombs_senegal',
                 'lib_path': 'ombs_senegal'},
-  'syms': {'ombs_senegal.core': {'ombs_senegal.core.foo': ('core.html#foo', 'ombs_senegal/core.py')}}}
+  'syms': { 'ombs_senegal.core': {'ombs_senegal.core.foo': ('core.html#foo', 'ombs_senegal/core.py')},
+            'ombs_senegal.region': {'ombs_senegal.region.get_region_mask': ('region.html#get_region_mask', 'ombs_senegal/region.py')}}}
