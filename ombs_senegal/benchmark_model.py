@@ -3,16 +3,16 @@
 # %% auto 0
 __all__ = ['normalize', 'FeatureGenerator', 'SimpleRegressionModel']
 
-# %% ../nbs/01_benchmark_model.ipynb 4
+# %% ../nbs/01_benchmark_model.ipynb 3
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
-# %% ../nbs/01_benchmark_model.ipynb 7
+# %% ../nbs/01_benchmark_model.ipynb 6
 def normalize(df):
     return (df - df.min()) / (df.max() - df.min())
 
-# %% ../nbs/01_benchmark_model.ipynb 12
+# %% ../nbs/01_benchmark_model.ipynb 11
 class FeatureGenerator:
     """
     Transforms time series data into feature matrices suitable for machine learning models.
@@ -47,7 +47,7 @@ class FeatureGenerator:
             targets.append(y.iloc[i + self.context_window])
         return pd.DataFrame(index=X.index[self.context_window:], data=features), pd.DataFrame(index=y.index[self.context_window:], data=targets)
 
-# %% ../nbs/01_benchmark_model.ipynb 15
+# %% ../nbs/01_benchmark_model.ipynb 14
 class SimpleRegressionModel:
     def __init__(self):
         self.model = LinearRegression()
