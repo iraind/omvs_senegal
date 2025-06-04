@@ -1,0 +1,6 @@
+website:
+  sidebar:
+    contents:
+      - index.ipynb
+      - 01_benchmark_model.ipynb
+      - 02_region.ipynb

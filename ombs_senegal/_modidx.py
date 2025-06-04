@@ -22,6 +22,8 @@ d = { 'settings': { 'branch': 'main',
                                               'ombs_senegal.benchmark_model.SimpleRegressionModel.predict': ( 'benchmark_model.html#simpleregressionmodel.predict',
                                                                                                               'ombs_senegal/benchmark_model.py'),
                                               'ombs_senegal.benchmark_model.normalize': ( 'benchmark_model.html#normalize',
-                                                                                          'ombs_senegal/benchmark_model.py')},
+                                                                                          'ombs_senegal/benchmark_model.py'),
+                                              'ombs_senegal.benchmark_model.plot_benchmark_scores': ( 'benchmark_model.html#plot_benchmark_scores',
+                                                                                                      'ombs_senegal/benchmark_model.py')},
             'ombs_senegal.region': {'ombs_senegal.region.get_region_mask': ('region.html#get_region_mask', 'ombs_senegal/region.py')},
-            'ombs_senegal.tamsat': {}}}
+            'ombs_senegal.tamsat': {'ombs_senegal.tamsat.smooth': ('tamsat.html#smooth', 'ombs_senegal/tamsat.py')}}}
