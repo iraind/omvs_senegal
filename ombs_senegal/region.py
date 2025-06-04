@@ -10,9 +10,9 @@ import xarray as xr
 import geopandas as gpd
 import regionmask
 
-# %% ../nbs/02_region.ipynb 5
+# %% ../nbs/02_region.ipynb 7
 def get_region_mask(ds: xr.Dataset, gdf: gpd.GeoDataFrame) -> xr.DataArray:
-    """Create a boolean mask from all geometries in the GeoDataFrame.
+    """Create a boolean xarray mask from all geometries in the GeoDataFrame.
     Returns True for points within any geometry, False otherwise."""
     masked_region_with_nan = regionmask.mask_geopandas(gdf, ds)
     mask = ~xr.ufuncs.isnan(masked_region_with_nan)
