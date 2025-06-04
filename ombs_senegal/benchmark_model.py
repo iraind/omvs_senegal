@@ -66,6 +66,8 @@ def plot_benchmark_scores(
         df: pd.DataFrame, # Dataframe with polynomial degree and window as index and mae and mse as columns
         figsize: tuple=(8, 7), # Figure size in inches (width, height)
         fontsize: int=7, # Font size for annotations
+        xlim: tuple=(None, None), # Tuple of (min, max) values for x-axis limits
+        ylim: tuple=(None, None) # Tuple of (min, max) values for y-axis limits
         ):
     """Plot MAE vs MSE scores with degree and window annotations for model comparison"""
     fig, ax = plt.subplots(figsize=figsize)
@@ -75,4 +77,6 @@ def plot_benchmark_scores(
         ax.annotate(f'd={deg},w={win}', (mae, mse), xytext=(5, 5), textcoords='offset points', fontsize=7)
 
     ax.set(xlabel='MAE', ylabel='MSE', title='MAE vs MSE for different degrees and windows')
+    plt.xlim(*xlim)
+    plt.ylim(*ylim)
     plt.show()
