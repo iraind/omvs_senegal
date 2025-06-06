@@ -20,8 +20,9 @@ class FeatureGenerator:
     Creates lagged features using a sliding window and optionally generates polynomial features
     to capture non-linear relationships between variables.
     """
-    def __init__(self, context_window: int = 10, degree: int = 1):
+    def __init__(self, context_window: int = 10, target_window: int = 10, degree: int = 1):
         self.context_window = context_window
+        self.target_window = target_window
         self.poly_features = PolynomialFeatures(degree=degree)
         
     def generate(self, df: pd.DataFrame, x_col: list[str], y_col: list[str]) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -42,11 +43,20 @@ class FeatureGenerator:
         features = []
         targets = []
         
-        for i in range(len(X) - self.context_window):
+        for i in range(len(X) - self.context_window - self.target_window):
             row_features = X.iloc[i:i + self.context_window]
             features.append(row_features.values.reshape(-1))
-            targets.append(y.iloc[i + self.context_window])
-        return pd.DataFrame(index=X.index[self.context_window:], data=features), pd.DataFrame(index=y.index[self.context_window:], data=targets)
+            row_targets = y.iloc[i + self.context_window: i + self.context_window + (self.target_window + 1)]
+            targets.append(row_targets.values.reshape(-1))
+
+        features = pd.DataFrame(index=X.index[self.context_window:len(X) - self.target_window], data=features)
+        targets = pd.DataFrame(
+            index=y.index[self.context_window:len(X) - self.target_window],
+            data=targets,
+            columns=[f"t+{i}" for i in range(0, self.target_window+1)])
+        return features, targets
+    
+
 
 # %% ../nbs/01_benchmark_model.ipynb 14
 class SimpleRegressionModel:
@@ -58,12 +68,51 @@ class SimpleRegressionModel:
         return self
     
     def predict(self, X):
-        prediction = self.model.predict(X)
-        return pd.Series(prediction.reshape(-1), index=X.index)
+        pred = self.model.predict(X)
+        return pd.DataFrame(pred, index=X.index, columns=[f"t+{i}" for i in range(0, pred.shape[1])])
 
-# %% ../nbs/01_benchmark_model.ipynb 21
+# %% ../nbs/01_benchmark_model.ipynb 22
 def plot_benchmark_scores(
         df: pd.DataFrame, # Dataframe with polynomial degree and window as index and mae and mse as columns
+        figsize: tuple=(8, 7), # Figure size in inches (width, height)
+        fontsize: int=7, # Font size for annotations
+        xlim: tuple=(None, None), # Tuple of (min, max) values for x-axis limits
+        ylim: tuple=(None, None), # Tuple of (min, max) values for y-axis limits
+        ):
+    """Plot MAE vs MSE scores with degree and window annotations for model comparison"""
+    fig, ax = plt.subplots(figsize=figsize)
+    
+    # Get unique time steps - expected format 't+N' where N is 0-10
+    time_steps = sorted([col for col in df.index.get_level_values(-1).unique() 
+                        if isinstance(col, str) and col.startswith('t+')],
+                       key=lambda x: int(x.split('+')[1]))
+    
+    # Create a colormap
+    colors = plt.cm.viridis(np.linspace(0, 1, len(time_steps)))
+    
+    # Plot each time step with different color
+    for t, color in zip(time_steps, colors):
+        mask = df.index.get_level_values(-1) == t
+        df_t = df[mask]
+        scatter = ax.scatter(df_t['mae'], df_t['rmse'], label=t, color=color)
+        
+        # Add annotations for each point
+        for (deg, win, _), (mae, rmse) in zip(df_t.index, df_t[['mae', 'rmse']].values):
+            ax.annotate(f'd={deg},w={win}', (mae, rmse), 
+                       xytext=(5, 5), textcoords='offset points', 
+                       fontsize=fontsize, color=color)
+
+    ax.set(xlabel='MAE', ylabel='RMSE', 
+           title='MAE vs RMSE for different degrees, windows and prediction horizons')
+    ax.legend(title='Prediction horizon', bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.xlim(*xlim)
+    plt.ylim(*ylim)
+    plt.tight_layout()
+    plt.show()
+
+# %% ../nbs/01_benchmark_model.ipynb 24
+def plot_benchmark_scores(
+        df: pd.DataFrame, #  Dataframe with polynomial degree and window as index and mae and mse as columns
         figsize: tuple=(8, 7), # Figure size in inches (width, height)
         fontsize: int=7, # Font size for annotations
         xlim: tuple=(None, None), # Tuple of (min, max) values for x-axis limits
