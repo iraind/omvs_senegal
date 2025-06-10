@@ -4,6 +4,7 @@
 __all__ = ['normalize', 'FeatureGenerator', 'SimpleRegressionModel', 'mae', 'rmse', 'plot_benchmark_scores']
 
 # %% ../nbs/01_benchmark_model.ipynb 3
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
