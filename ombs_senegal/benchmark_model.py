@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['normalize', 'FeatureGenerator', 'SimpleRegressionModel', 'BenchmarkScores', 'plot_static_benchmark_scores',
-           'plot_interactive_benchmark_scores']
+           'plot_interactive_benchmark_scores', 'plot_prediction_comparison']
 
 # %% ../nbs/01_benchmark_model.ipynb 3
 import numpy as np
@@ -174,7 +174,7 @@ def plot_static_benchmark_scores(
     plt.tight_layout()
     plt.show()
 
-# %% ../nbs/01_benchmark_model.ipynb 27
+# %% ../nbs/01_benchmark_model.ipynb 28
 def plot_interactive_benchmark_scores(
         df: pd.DataFrame, # Dataframe with polynomial degree and window as index and mae and mse as columns
         figsize: tuple=(800, 600), # Figure size in pixels (width, height)
@@ -192,10 +192,10 @@ def plot_interactive_benchmark_scores(
         if isinstance(col, str) and col.startswith('t+'):
             time_steps.append(col)
     time_steps = sorted(time_steps, key=lambda x: int(x.split('+')[1]))
-    
     # Create a colormap
-    colors = px.colors.sequential.Viridis[:len(time_steps)]
-    
+    # Generate more colors by interpolating the Viridis colormap
+    n_colors = len(time_steps)
+    colors = px.colors.sample_colorscale('Viridis', n_colors)
     # Create figure
     fig = go.Figure()
     
@@ -237,3 +237,34 @@ def plot_interactive_benchmark_scores(
     
     return fig
 
+
+# %% ../nbs/01_benchmark_model.ipynb 34
+def plot_prediction_comparison(
+        observed: xr.DataArray, # Time series of observed water discharge values
+        predicted: xr.Dataset, # Dataset containing predicted discharge values for each forecast horizon (t+1 to t+10)
+        mgb: xr.DataArray # Time series of MGB model water discharge predictions
+        ) -> plt.Figure:
+    """Plot comparison between observed, predicted and MGB discharge values for a 10-day horizon."""
+    fig, axes = plt.subplots(5, 2, figsize=(14, 10), sharex=True, sharey=True)
+    axes = axes.flatten()
+
+    for i in range(0, 10):
+        y_obs = observed.to_series()
+        y_pred = predicted[f"t+{i+1}"].to_series()
+        y_mgb = mgb.to_series()
+        
+        rmse = np.sqrt(((y_obs - y_pred)**2).mean())
+        correlation = np.corrcoef(y_obs, y_pred)[0, 1]
+
+        axes[i].plot(y_obs, label="Q_obs", color='blue')
+        axes[i].plot(y_pred, label="Q_pred", color='red', linestyle='solid')
+        axes[i].plot(y_mgb, label="Q_mgb", color='black')
+
+        axes[i].set_title(f"Jour {i+1} RMSE={rmse:.2f}, Corr={correlation:.2f}")
+        
+        axes[i].grid()
+        axes[i].legend()
+
+    plt.suptitle("Comparaison des valeurs réelles et prédites pour chaque jour de l'horizon de 10 jours", fontsize=14)
+    plt.tight_layout()
+    return fig

@@ -41,6 +41,8 @@ d = { 'settings': { 'branch': 'main',
                                                                                           'ombs_senegal/benchmark_model.py'),
                                               'ombs_senegal.benchmark_model.plot_interactive_benchmark_scores': ( 'benchmark_model.html#plot_interactive_benchmark_scores',
                                                                                                                   'ombs_senegal/benchmark_model.py'),
+                                              'ombs_senegal.benchmark_model.plot_prediction_comparison': ( 'benchmark_model.html#plot_prediction_comparison',
+                                                                                                           'ombs_senegal/benchmark_model.py'),
                                               'ombs_senegal.benchmark_model.plot_static_benchmark_scores': ( 'benchmark_model.html#plot_static_benchmark_scores',
                                                                                                              'ombs_senegal/benchmark_model.py')},
             'ombs_senegal.region': {'ombs_senegal.region.get_region_mask': ('region.html#get_region_mask', 'ombs_senegal/region.py')}}}
