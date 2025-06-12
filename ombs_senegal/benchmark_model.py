@@ -76,23 +76,25 @@ class SimpleRegressionModel:
 
 # %% ../nbs/01_benchmark_model.ipynb 22
 class BenchmarkScores:
-    """A class to compute and compare different error metrics between predictions and observations.
+    """
+    A class to compute and compare different error metrics between predictions and observations.
     
     This class provides a flexible way to compute multiple error metrics between predicted and observed values.
     New metrics can be easily added by implementing them as methods.
     The new metrics can then be used by passing their method names as strings to compute_scores().
     
     Example:
-        ```python
-        class CustomBenchmarkScores(BenchmarkScores):
+
+    ```python
+    class CustomBenchmarkScores(BenchmarkScores):
         def mse(self, pred, obs):
             error = ((pred - obs)**2).mean(dim="time") 
             error.name = "mse"
             return error
-            
-        # Can then be used as:
-        scores = compute_scores(pred, obs, metrics=["mae", "rmse", "mse"])
-        ```
+        
+    # Can then be used as:
+    scores = compute_scores(pred, obs, metrics=["mae", "rmse", "mse"])
+    ```
     """
     def __init__(self):
         pass
@@ -114,24 +116,70 @@ class BenchmarkScores:
         error.name = "rmse"
         return error
     
-    def _compute_score(self, predictions: xr.Dataset, observations: xr.Dataset, metric: str):
-        pass
+    def nse(self, pred, obs):
+        """
+        Calculate Nash-Sutcliffe Efficiency score.
+        
+        $NSE = 1 - \\frac{\\sum(pred - obs)^2}{\\sum(obs - \\overline{obs})^2}$
+        
+        NSE ranges from -inf to 1, with 1 being a perfect match
+        """
+        numerator = ((pred - obs)**2).sum(dim="time")
+        denominator = ((obs - obs.mean(dim="time"))**2).sum(dim="time")
+        error = 1 - (numerator / denominator)
+        error.name = "nse"
+        return error
+    
+    def kge(self, pred, obs):
+        """Calculate Kling-Gupta Efficiency score.
+        
+        $KGE = 1 - sqrt((r-1)^2 + (\alpha-1)^2 + (\beta-1)^2)$
+        
+        where:
+        - r = Pearson correlation coefficient
+        - $\\alpha = \\frac{std(pred)}{std(obs)}$ 
+        - $\\beta = \\frac{mean(pred)}{mean(obs)}$
+        
+        KGE ranges from -inf to 1, with 1 being a perfect match
+        """
+        # Calculate components
+        r = xr.corr(pred, obs, dim="time")
+        alpha = pred.std(dim="time") / obs.std(dim="time")
+        beta = pred.mean(dim="time") / obs.mean(dim="time")
+        
+        # Calculate KGE
+        error = 1 - np.sqrt((r - 1)**2 + (alpha - 1)**2 + (beta - 1)**2)
+        error.name = "kge"
+        return error
 
-    def find_nbest_scores(self, ds: xr.Dataset, n: int=2):
-        """Given a dataset containing scores as variables,find the n best scores for each variable."""
-        for metric in ds.data_vars:
-            min_coords = self._find_nsmallest_index(ds[metric].to_series(), n)
-            n_best_scores = ds.to_dataframe().reorder_levels(min_coords.names).loc[min_coords]
-            return n_best_scores
+    def find_nbest_scores(
+            self,
+            ds: xr.Dataset, # Dataset containing scores as variables
+            how: dict[str, str], # Dictionary of how to find the best scores for each variable
+            n: int=2 # Number of best scores to find
+        ):
+        """Given a dataset containing scores as variables,find the n best scores for each score."""
+        assert all(how in ["min", "max"] for how in how.values()), "how must be either 'min' or 'max'"
+        df = ds.to_dataframe()
+        df = df.reorder_levels(["variable"] + [level for level in df.index.names if level != "variable"])
+        best_scores_coords = []
+        for score, how in how.items():
+            ascending = how == "min"
+            best_variable_scores = self._find_best_scores_by_variable(df[score], n, ascending)
+            best_scores_coords.extend(best_variable_scores.values.tolist())
+        best_scores_coords = pd.MultiIndex.from_tuples(best_scores_coords, names=df.index.names)
+        n_best_scores = df.loc[best_scores_coords]
+        n_best_scores = n_best_scores.sort_index().drop_duplicates()
+        return n_best_scores
 
-    def _find_nsmallest_index(self, serie: pd.Series, n):
-        """Find the n smallest values for each variable in a serie and return their index."""
-        sorted = serie.sort_values()
-        nsmallest_values = []
+    def _find_best_scores_by_variable(self, serie: pd.Series, n, ascending: bool):
+        """For each unique variable in a multi-indexed Series, find indices of the n best values based on ascending/descending sort."""
+        sorted = serie.sort_values(ascending=ascending)
+        nbest_values = []
         for v in sorted.index.get_level_values("variable").unique():
-            nsmallest_values.append(sorted.loc[[v]].head(n))
-        nsmallest_values = pd.concat(nsmallest_values)
-        return nsmallest_values.index
+            nbest_values.append(sorted.loc[[v]].head(n))
+        nbest_values = pd.concat(nbest_values)
+        return nbest_values.index
 
 # %% ../nbs/01_benchmark_model.ipynb 25
 def plot_static_benchmark_scores(
