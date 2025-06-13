@@ -293,7 +293,7 @@ def plot_prediction_comparison(
         scores: xr.Dataset=None # Dictionary containg the t+i as key and the best model fit degree and window as value
         ) -> plt.Figure:
     """Plot comparison between observed, predicted and MGB discharge values for a i-day horizon."""
-    n_horizon = len(predicted.data_vars) - 1
+    n_horizon = len(predicted.data_vars)
     fig, axes = plt.subplots(int(n_horizon/2), 2, figsize=(20, int(n_horizon/2*5)), sharex=True, sharey=True)
     axes = axes.flatten()
 
