@@ -104,9 +104,10 @@ class BenchmarkScores:
     def __init__(self):
         pass
 
-    def compute_scores(self, predictions: xr.DataArray, observations: xr.DataArray, metrics: list[str]):
+    def compute_scores(self, predictions: xr.Dataset, observations: xr.DataArray, metrics: list[str]):
         """Compute the scores for the predictions and observations."""
         scores = []
+        predictions = predictions.to_array("forecast_horizon")
         for metric in metrics:
             scores.append(getattr(self, metric)(predictions, observations).to_dataset(name=metric))
         return xr.merge(scores)
