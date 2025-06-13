@@ -166,22 +166,22 @@ class BenchmarkScores:
         """Given a dataset containing scores as variables,find the n best scores for each score."""
         assert all(how in ["min", "max"] for how in how.values()), "how must be either 'min' or 'max'"
         df = ds.to_dataframe()
-        df = df.reorder_levels(["variable"] + [level for level in df.index.names if level != "variable"])
+        df = df.reorder_levels(["forecast_horizon"] + [level for level in df.index.names if level != "forecast_horizon"])
         best_scores_coords = []
         for score, how in how.items():
             ascending = how == "min"
-            best_variable_scores = self._find_best_scores_by_variable(df[score], n, ascending)
-            best_scores_coords.extend(best_variable_scores.values.tolist())
+            best_scores_forecast_horizon = self._find_best_scores_by_forecast_horizon(df[score], n, ascending)
+            best_scores_coords.extend(best_scores_forecast_horizon.values.tolist())
         best_scores_coords = pd.MultiIndex.from_tuples(best_scores_coords, names=df.index.names)
         n_best_scores = df.loc[best_scores_coords]
         n_best_scores = n_best_scores.sort_index().drop_duplicates()
         return n_best_scores
 
-    def _find_best_scores_by_variable(self, serie: pd.Series, n, ascending: bool):
-        """For each unique variable in a multi-indexed Series, find indices of the n best values based on ascending/descending sort."""
+    def _find_best_scores_by_forecast_horizon(self, serie: pd.Series, n, ascending: bool):
+        """For each unique forecast horizon in a multi-indexed Series, find indices of the n best values based on ascending/descending sort."""
         sorted = serie.sort_values(ascending=ascending)
         nbest_values = []
-        for v in sorted.index.get_level_values("variable").unique():
+        for v in sorted.index.get_level_values("forecast_horizon").unique():
             nbest_values.append(sorted.loc[[v]].head(n))
         nbest_values = pd.concat(nbest_values)
         return nbest_values.index
@@ -314,7 +314,7 @@ def plot_prediction_comparison(
 
 
         if scores is not None:
-            score = scores.sel(variable=f"t+{i+1}")
+            score = scores.sel(forecast_horizon=f"t+{i+1}")
             if best_model is not None:
                 score = score.sel(**best_model[f"t+{i+1}"])
             score = score.to_array().to_series().to_dict()
