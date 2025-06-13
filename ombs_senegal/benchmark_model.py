@@ -288,28 +288,36 @@ def plot_interactive_benchmark_scores(
 def plot_prediction_comparison(
         observed: xr.DataArray, # Time series of observed water discharge values
         predicted: xr.Dataset, # Dataset containing predicted discharge values for each forecast horizon (t+i)
-        best_model: dict, # Dictionary containg the t+i as key and the best model fit degree and window as value
-        mgb: xr.DataArray # Time series of MGB model water discharge predictions
+        mgb: xr.DataArray, # Time series of MGB model water discharge predictions
+        best_model: dict=None,
+        scores: xr.Dataset=None # Dictionary containg the t+i as key and the best model fit degree and window as value
         ) -> plt.Figure:
     """Plot comparison between observed, predicted and MGB discharge values for a i-day horizon."""
     n_horizon = len(results_ds.data_vars) - 1
-    fig, axes = plt.subplots(int(n_horizon/2), 2, figsize=(14, 10), sharex=True, sharey=True)
+    fig, axes = plt.subplots(int(n_horizon/2), 2, figsize=(20, int(n_horizon/2*5)), sharex=True, sharey=True)
     axes = axes.flatten()
 
     for i in range(0, n_horizon):
         y_obs = observed.to_series()
         y_pred = predicted[f"t+{i+1}"]
-        y_pred = y_pred.sel(**best_model[f"t+{i+1}"]).to_series()
+        if best_model is not None:
+            y_pred = y_pred.sel(**best_model[f"t+{i+1}"])
+        y_pred = y_pred.to_series()
         y_mgb = mgb.to_series()
-        
-        rmse = np.sqrt(((y_obs - y_pred)**2).mean())
-        correlation = np.corrcoef(y_obs, y_pred)[0, 1]
+
+
+        if scores is not None:
+            score = scores.sel(variable=f"t+{i+1}")
+            if best_model is not None:
+                score = score.sel(**best_model[f"t+{i+1}"])
+            score = score.to_array().to_series().to_dict()
 
         axes[i].plot(y_obs, label="Q_obs", color='blue')
         axes[i].plot(y_pred, label="Q_pred", color='red', linestyle='solid')
         axes[i].plot(y_mgb, label="Q_mgb", color='black')
 
-        axes[i].set_title(f"Jour {i+1} RMSE={rmse:.2f}, Corr={correlation:.2f}")
+        score_str = "".join(f" {k.upper()}={v:.2f}" for k, v in score.items())
+        axes[i].set_title(f"Jour {i+1} \n {score_str}")
         
         axes[i].grid()
         axes[i].legend()
