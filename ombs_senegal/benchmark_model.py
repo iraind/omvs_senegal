@@ -69,8 +69,15 @@ class SimpleRegressionModel:
         return self
     
     def predict(self, X):
-        pred = self.model.predict(X)
-        return pd.DataFrame(pred, index=X.index, columns=[f"t+{i+1}" for i in range(0, pred.shape[1])])
+        return self.model.predict(X)
+    
+    def predict_as_dataframe(self, X, degree, ctx_window):
+        pred = self.predict(X)
+        pred = pd.DataFrame(pred, index=X.index, columns=[f"t+{i+1}" for i in range(0, pred.shape[1])])
+        pred['degree'] = degree
+        pred['ctx_window'] = ctx_window
+        pred = pred.set_index(['degree', 'ctx_window'], append=True)
+        return pred
 
 # %% ../nbs/01_benchmark_model.ipynb 23
 class BenchmarkScores:
