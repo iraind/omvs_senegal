@@ -284,7 +284,7 @@ def plot_interactive_benchmark_scores(
     return fig
 
 
-# %% ../nbs/01_benchmark_model.ipynb 33
+# %% ../nbs/01_benchmark_model.ipynb 32
 def plot_prediction_comparison(
         observed: xr.DataArray, # Time series of observed water discharge values
         predicted: xr.Dataset, # Dataset containing predicted discharge values for each forecast horizon (t+i)
@@ -293,7 +293,7 @@ def plot_prediction_comparison(
         scores: xr.Dataset=None # Dictionary containg the t+i as key and the best model fit degree and window as value
         ) -> plt.Figure:
     """Plot comparison between observed, predicted and MGB discharge values for a i-day horizon."""
-    n_horizon = len(results_ds.data_vars) - 1
+    n_horizon = len(predicted.data_vars) - 1
     fig, axes = plt.subplots(int(n_horizon/2), 2, figsize=(20, int(n_horizon/2*5)), sharex=True, sharey=True)
     axes = axes.flatten()
 
@@ -317,7 +317,11 @@ def plot_prediction_comparison(
         axes[i].plot(y_mgb, label="Q_mgb", color='black')
 
         score_str = "".join(f" {k.upper()}={v:.2f}" for k, v in score.items())
-        axes[i].set_title(f"Jour {i+1} \n {score_str}")
+        if best_model is not None:
+            model_str = "".join(f" {k.capitalize()}={v}" for k, v in best_model[f"t+{i+1}"].items())
+        else:
+            model_str = ""
+        axes[i].set_title(f"Jour {i+1} {model_str}\n {score_str}")
         
         axes[i].grid()
         axes[i].legend()
