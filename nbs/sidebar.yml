@@ -2,9 +2,11 @@ website:
   sidebar:
     contents:
       - index.ipynb
-      - section: Data
+      - section: Data Preparation
         contents:
-        - 01_data.features.ipynb
-      - 02_region.ipynb
-      - 03_season.ipynb
-      - 04_deepl.ipynb
+        - 01_dataprep.features.ipynb
+        - 02_dataprep.region.ipynb
+        - 03_dataprep.season.ipynb
+      - section: Deep Learning
+        contents:
+        - 04_deepl.core.ipynb
