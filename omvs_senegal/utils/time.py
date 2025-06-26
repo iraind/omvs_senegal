@@ -39,7 +39,7 @@ class ForecastTimeHandler:
         return df
 
     def add_forecast_time_as_index(self, df: pd.DataFrame) -> pd.DataFrame:
-        def get_daily_timedeltas(forecast_horizons):
+        def get_daily_timedeltas(forecast_horizons: pd.Index) -> list[pd.Timedelta]:
             """Extract timedelta day values from forecast horizons starting with 't+'"""
             return [pd.Timedelta(days=int(fh.replace("t+", ""))) for fh in forecast_horizons if fh.startswith('t+')]
         df = df.copy()
@@ -53,7 +53,13 @@ class ForecastTimeHandler:
         """Convert stacked forecast horizon index back to horizon-as-columns format"""
         return df.reset_index("forecast_time", drop=True)[self.stack_col_name].unstack("forecast_horizon")
     
-    def align(self, pred, obs, stack_pred=False, how="left", **kwargs):
+    def align(self,
+            pred: pd.DataFrame, # Predictions
+            obs: pd.DataFrame, # Observations
+            stack_pred: bool = True, # Set to false if predictions already have forecast time as index
+            how: str = "left", # How to align the data
+            **kwargs
+        ) -> tuple[pd.DataFrame, pd.DataFrame]:
         """Align the predictions and observations by forecast time"""
         obs, pred = obs.copy(), pred.copy()
         if stack_pred:
@@ -64,7 +70,13 @@ class ForecastTimeHandler:
         obs.index.name = obs_index_name
         return pred, obs
     
-    def align_as_xarray(self, pred, obs, how="left", **kwargs):
+    def align_as_xarray(self, 
+            pred: pd.DataFrame, # Predictions
+            obs: pd.DataFrame, # Observations
+            stack_pred: bool = True, # Set to false if predictions already have forecast time as index
+            how: str = "left", # How to align the data
+            **kwargs
+        )-> tuple[xr.DataArray, xr.DataArray]:
         """Align the predictions and observations by forecast horizon and return as xarray"""
         if 1 != len(obs.columns):
             raise ValueError("Observations must have only one column")
@@ -72,7 +84,7 @@ class ForecastTimeHandler:
         pred_col = self.stack_col_name
 
         obs, pred = obs.copy(), pred.copy()
-        pred, obs = self.align(pred, obs, stack_pred=True, how=how, **kwargs)
+        pred, obs = self.align(pred, obs, stack_pred=stack_pred, how=how, **kwargs)
 
         self.stack_col_name = obs_col
         obs = self.unstack(obs)
@@ -83,7 +95,12 @@ class ForecastTimeHandler:
         
         return pred, obs
     
-    def join(self, pred, obs, stack_pred=False, **kwargs):
+    def join(self,
+            pred: pd.DataFrame, # Predictions
+            obs: pd.DataFrame, # Observations
+            stack_pred: bool = True, # Set to false if predictions already have forecast time as index
+            **kwargs
+        ) -> pd.DataFrame:
         """Join the predictions and observations by forecast time"""
         obs, pred = obs.copy(), pred.copy()
         if stack_pred:
@@ -92,9 +109,14 @@ class ForecastTimeHandler:
         return pred.join(obs, on="forecast_time", **kwargs)
 
     
-    def join_as_xarray(self, pred, obs, **kwargs):
+    def join_as_xarray(self,
+            pred: pd.DataFrame, # Predictions
+            obs: pd.DataFrame, # Observations
+            stack_pred: bool = True, # Set to false if predictions already have forecast time as index
+            **kwargs
+        ) -> xr.DataArray:
         """Align the predictions and observations by forecast horizon and join them as xarray"""
-        joint = self.join(pred, obs, stack_pred=True, **kwargs)
+        joint = self.join(pred, obs, stack_pred=stack_pred, **kwargs)
         joint = self.unstack(joint)
         return joint.to_xarray().to_array("forecast_horizon")
 
