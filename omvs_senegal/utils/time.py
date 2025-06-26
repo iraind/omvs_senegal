@@ -53,26 +53,18 @@ class ForecastTimeHandler:
         """Convert stacked forecast horizon index back to horizon-as-columns format"""
         return df.reset_index("forecast_time", drop=True)[self.stack_col_name].unstack("forecast_horizon")
     
-    def align(self, pred, obs, stack_pred=False):
+    def align(self, pred, obs, stack_pred=False, how="left", **kwargs):
         """Align the predictions and observations by forecast time"""
         obs, pred = obs.copy(), pred.copy()
         if stack_pred:
             pred = self.stack(pred)
         obs_index_name = obs.index.name
         obs.index.name = "forecast_time"
-        pred, obs = pred.align(obs, join="outer", axis=0)
+        pred, obs = pred.align(obs, join=how, axis=0, **kwargs)
         obs.index.name = obs_index_name
         return pred, obs
     
-    def join(self, pred, obs, stack_pred=False):
-        """Join the predictions and observations by forecast time"""
-        obs, pred = obs.copy(), pred.copy()
-        if stack_pred:
-            pred = self.stack(pred)
-        obs.index.name = "forecast_time"
-        return pred.join(obs, on="forecast_time")
-
-    def align_as_xarray(self, pred, obs):
+    def align_as_xarray(self, pred, obs, how="left", **kwargs):
         """Align the predictions and observations by forecast horizon and return as xarray"""
         if 1 != len(obs.columns):
             raise ValueError("Observations must have only one column")
@@ -80,9 +72,7 @@ class ForecastTimeHandler:
         pred_col = self.stack_col_name
 
         obs, pred = obs.copy(), pred.copy()
-        pred = self.stack(pred)
-        obs.index.name = "forecast_time"
-        pred, obs = self.align(pred, obs)
+        pred, obs = self.align(pred, obs, stack_pred=True, how=how, **kwargs)
 
         self.stack_col_name = obs_col
         obs = self.unstack(obs)
@@ -93,8 +83,18 @@ class ForecastTimeHandler:
         
         return pred, obs
     
-    def join_as_xarray(self, pred, obs):
+    def join(self, pred, obs, stack_pred=False, **kwargs):
+        """Join the predictions and observations by forecast time"""
+        obs, pred = obs.copy(), pred.copy()
+        if stack_pred:
+            pred = self.stack(pred)
+        obs.index.name = "forecast_time"
+        return pred.join(obs, on="forecast_time", **kwargs)
+
+    
+    def join_as_xarray(self, pred, obs, **kwargs):
         """Align the predictions and observations by forecast horizon and join them as xarray"""
-        pred, obs = self.align_as_xarray(pred, obs)
-        return xr.merge([pred, obs])
+        joint = self.join(pred, obs, stack_pred=True, **kwargs)
+        joint = self.unstack(joint)
+        return joint.to_xarray().to_array("forecast_horizon")
 
