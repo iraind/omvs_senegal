@@ -1,0 +1,163 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "ombs_senegal",
+    "section": "",
+    "text": "This file will become your README and also the index of your documentation.",
+    "crumbs": [
+      "ombs_senegal"
+    ]
+  },
+  {
+    "objectID": "index.html#developer-guide",
+    "href": "index.html#developer-guide",
+    "title": "ombs_senegal",
+    "section": "Developer Guide",
+    "text": "Developer Guide\nIf you are new to using nbdev here are some useful pointers to get you started.\n\nInstall ombs_senegal in Development mode\n# make sure ombs_senegal package is installed in development mode\n$ pip install -e .\n\n# make changes under nbs/ directory\n# ...\n\n# compile to have changes apply to ombs_senegal\n$ nbdev_prepare",
+    "crumbs": [
+      "ombs_senegal"
+    ]
+  },
+  {
+    "objectID": "index.html#usage",
+    "href": "index.html#usage",
+    "title": "ombs_senegal",
+    "section": "Usage",
+    "text": "Usage\n\nInstallation\nInstall latest from the GitHub repository:\n$ pip install git+https://github.com/iraind/ombs_senegal.git\nor from conda\n$ conda install -c iraind ombs_senegal\nor from pypi\n$ pip install ombs_senegal\n\n\nDocumentation\nDocumentation can be found hosted on this GitHub repository’s pages. Additionally you can find package manager specific guidelines on conda and pypi respectively.",
+    "crumbs": [
+      "ombs_senegal"
+    ]
+  },
+  {
+    "objectID": "index.html#how-to-use",
+    "href": "index.html#how-to-use",
+    "title": "ombs_senegal",
+    "section": "How to use",
+    "text": "How to use\nFill me in please! Don’t forget code examples:\n\n1+1\n\n2",
+    "crumbs": [
+      "ombs_senegal"
+    ]
+  },
+  {
+    "objectID": "06_utils.time.html",
+    "href": "06_utils.time.html",
+    "title": "Time",
+    "section": "",
+    "text": "The objective of this notebook is to implement utilities to ease the time handling",
+    "crumbs": [
+      "Utils",
+      "Time"
+    ]
+  },
+  {
+    "objectID": "06_utils.time.html#forecast-time-handling",
+    "href": "06_utils.time.html#forecast-time-handling",
+    "title": "Time",
+    "section": "Forecast time handling",
+    "text": "Forecast time handling\nTime series forecasting often involves multiple time indices (e.g., run time and forecast time) which can lead to alignment errors if not handled carefully. This class provides a unified way to manage these indices and prevent common mistakes in forecast data manipulation. The class provides methods to convert between two indexing ways:\n\nForecast horizons as columns (e.g., t+1, t+2 columns)\nForecast horizons and times as row indices\n\nThe first format is convenient for saving data, while the second is better suited for scoring and plotting since it explicitly tracks the actual forecast times.\n\nsource\n\nForecastTimeHandler\n\n ForecastTimeHandler (run_time_col_name:str='run_time',\n                      stack_col_name:str='pred')\n\n*A utility class for handling forecast time transformations.\nThis class provides functionality to manipulate forecast time between different formats, specifically handling the conversion between columnar forecast horizons and stacked time series formats. It manages forecast horizons (e.g., ‘t+1’, ‘t+2’) and their corresponding timestamps.*\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nrun_time_col_name\nstr\nrun_time\nName of the time index that represent the time from which the forecast is made\n\n\nstack_col_name\nstr\npred\nName of the column when columns are stacked\n\n\n\nWe will first create some syntethic data\n\nforecast, observations = create_test_data()\nforecast.head(3)\n\n\n\n\n\n\n\n\nt+1\nt+2\nt+3\n\n\nrun_time\n\n\n\n\n\n\n\n2023-01-01\n99.727885\n24.053605\n31.289456\n\n\n2023-01-02\n55.554807\n86.473046\n59.983036\n\n\n2023-01-03\n39.305022\n15.843067\n66.079883\n\n\n\n\n\n\n\n\nobservations.head(3)\n\n\n\n\n\n\n\n\nobs\n\n\ntime\n\n\n\n\n\n2023-01-03\n18.829447\n\n\n2023-01-04\n17.564888\n\n\n2023-01-05\n10.355245\n\n\n\n\n\n\n\nWe will now create an instance of the ForecastTimeHandler class\n\ntime_handler = ForecastTimeHandler(run_time_col_name=\"run_time\", stack_col_name=\"pred\")\n\n\nsource\n\n\nForecastTimeHandler.stack\n\n ForecastTimeHandler.stack (df:pandas.core.frame.DataFrame)\n\nStack the forecast horizon as index and add forecast time as index\nWe can stack the data to convert from forecast horizons as columns to having forecast time as an index. This format is better suited for scoring and plotting.\n\nstacked_forecast = time_handler.stack(forecast)\nstacked_forecast.head()\n\n\n\n\n\n\n\n\n\n\npred\n\n\nrun_time\nforecast_horizon\nforecast_time\n\n\n\n\n\n2023-01-01\nt+1\n2023-01-02\n99.727885\n\n\nt+2\n2023-01-03\n24.053605\n\n\nt+3\n2023-01-04\n31.289456\n\n\n2023-01-02\nt+1\n2023-01-03\n55.554807\n\n\nt+2\n2023-01-04\n86.473046\n\n\n\n\n\n\n\n\nsource\n\n\nForecastTimeHandler.unstack\n\n ForecastTimeHandler.unstack (df:pandas.core.frame.DataFrame)\n\nConvert stacked forecast horizon index back to horizon-as-columns format\nWe can simply revert this operation as follows\n\nunstacked_forecast = time_handler.unstack(stacked_forecast)\nunstacked_forecast.head()\n\n\n\n\n\n\n\nforecast_horizon\nt+1\nt+2\nt+3\n\n\nrun_time\n\n\n\n\n\n\n\n2023-01-01\n99.727885\n24.053605\n31.289456\n\n\n2023-01-02\n55.554807\n86.473046\n59.983036\n\n\n2023-01-03\n39.305022\n15.843067\n66.079883\n\n\n2023-01-04\n30.784823\n61.117817\n88.114200\n\n\n2023-01-05\n68.896057\n28.532566\n15.283796\n\n\n\n\n\n\n\n\nsource\n\n\nForecastTimeHandler.align\n\n ForecastTimeHandler.align (pred:pandas.core.frame.DataFrame,\n                            obs:pandas.core.frame.DataFrame,\n                            stack_pred:bool=True, how:str='left',\n                            **kwargs)\n\nAlign the predictions and observations by forecast time\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\npred\nDataFrame\n\nPredictions\n\n\nobs\nDataFrame\n\nObservations\n\n\nstack_pred\nbool\nTrue\nSet to false if predictions already have forecast time as index\n\n\nhow\nstr\nleft\nHow to align the data\n\n\nkwargs\nVAR_KEYWORD\n\n\n\n\nReturns\ntuple\n\n\n\n\n\nThis operation will rename the columns index name as “forecast_horizon”. Lets try few more things we can do. We can align indexes:\n\naligned_frcst, aligned_obs = time_handler.align(forecast, observations, stack_pred=True)\naligned_frcst.head(3)\n\n\n\n\n\n\n\n\n\n\npred\n\n\nrun_time\nforecast_horizon\nforecast_time\n\n\n\n\n\n2023-01-01\nt+1\n2023-01-02\n99.727885\n\n\nt+2\n2023-01-03\n24.053605\n\n\nt+3\n2023-01-04\n31.289456\n\n\n\n\n\n\n\n\naligned_obs.head(3)\n\n\n\n\n\n\n\n\n\n\nobs\n\n\nrun_time\nforecast_horizon\nforecast_time\n\n\n\n\n\n2023-01-01\nt+1\n2023-01-02\nNaN\n\n\nt+2\n2023-01-03\n18.829447\n\n\nt+3\n2023-01-04\n17.564888\n\n\n\n\n\n\n\n\nsource\n\n\nForecastTimeHandler.align_as_xarray\n\n ForecastTimeHandler.align_as_xarray (pred:pandas.core.frame.DataFrame,\n                                      obs:pandas.core.frame.DataFrame,\n                                      stack_pred:bool=True,\n                                      how:str='left', **kwargs)\n\nAlign the predictions and observations by forecast horizon and return as xarray\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\npred\nDataFrame\n\nPredictions\n\n\nobs\nDataFrame\n\nObservations\n\n\nstack_pred\nbool\nTrue\nSet to false if predictions already have forecast time as index\n\n\nhow\nstr\nleft\nHow to align the data\n\n\nkwargs\nVAR_KEYWORD\n\n\n\n\nReturns\ntuple\n\n\n\n\n\nWe can do the same thing but getting an xarray datarrays as output. Remember that in this case forcast data must be given with forecast horizons as columns\n\nforcast_ds, obs_ds = time_handler.align_as_xarray(forecast, observations)\nforcast_ds\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n&lt;xarray.DataArray 'pred' (forecast_horizon: 3, run_time: 10)&gt; Size: 240B\narray([[99.72788525, 55.55480681, 39.30502169, 30.78482329, 68.89605663,\n        79.72856186, 62.07890179, 97.21806371, 91.59694962, 30.79350721],\n       [24.05360513, 86.47304606, 15.84306704, 61.11781718, 28.53256563,\n        24.72953579, 66.7879685 , 52.78458146, 79.66385079, 18.87182379],\n       [31.28945581, 59.98303617, 66.07988317, 88.11419986, 15.28379592,\n        19.63154885, 52.52554298, 95.3972403 , 81.32514287, 69.13172239]])\nCoordinates:\n  * run_time          (run_time) datetime64[ns] 80B 2023-01-01 ... 2023-01-10\n  * forecast_horizon  (forecast_horizon) object 24B 't+1' 't+2' 't+3'xarray.DataArray'pred'forecast_horizon: 3run_time: 1099.73 55.55 39.31 30.78 68.9 79.73 ... 19.63 52.53 95.4 81.33 69.13array([[99.72788525, 55.55480681, 39.30502169, 30.78482329, 68.89605663,\n        79.72856186, 62.07890179, 97.21806371, 91.59694962, 30.79350721],\n       [24.05360513, 86.47304606, 15.84306704, 61.11781718, 28.53256563,\n        24.72953579, 66.7879685 , 52.78458146, 79.66385079, 18.87182379],\n       [31.28945581, 59.98303617, 66.07988317, 88.11419986, 15.28379592,\n        19.63154885, 52.52554298, 95.3972403 , 81.32514287, 69.13172239]])Coordinates: (2)run_time(run_time)datetime64[ns]2023-01-01 ... 2023-01-10array(['2023-01-01T00:00:00.000000000', '2023-01-02T00:00:00.000000000',\n       '2023-01-03T00:00:00.000000000', '2023-01-04T00:00:00.000000000',\n       '2023-01-05T00:00:00.000000000', '2023-01-06T00:00:00.000000000',\n       '2023-01-07T00:00:00.000000000', '2023-01-08T00:00:00.000000000',\n       '2023-01-09T00:00:00.000000000', '2023-01-10T00:00:00.000000000'],\n      dtype='datetime64[ns]')forecast_horizon(forecast_horizon)object't+1' 't+2' 't+3'array(['t+1', 't+2', 't+3'], dtype=object)Indexes: (2)run_timePandasIndexPandasIndex(DatetimeIndex(['2023-01-01', '2023-01-02', '2023-01-03', '2023-01-04',\n               '2023-01-05', '2023-01-06', '2023-01-07', '2023-01-08',\n               '2023-01-09', '2023-01-10'],\n              dtype='datetime64[ns]', name='run_time', freq=None))forecast_horizonPandasIndexPandasIndex(Index(['t+1', 't+2', 't+3'], dtype='object', name='forecast_horizon'))Attributes: (0)\n\n\n\nobs_ds\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n&lt;xarray.DataArray 'obs' (forecast_horizon: 3, run_time: 10)&gt; Size: 240B\narray([[        nan, 18.82944742, 17.56488779, 10.3552448 , 45.56872661,\n        58.71988735, 57.17550098, 21.34079622, 83.68233322, 74.73807991],\n       [18.82944742, 17.56488779, 10.3552448 , 45.56872661, 58.71988735,\n        57.17550098, 21.34079622, 83.68233322, 74.73807991, 38.41755211],\n       [17.56488779, 10.3552448 , 45.56872661, 58.71988735, 57.17550098,\n        21.34079622, 83.68233322, 74.73807991, 38.41755211, 98.01940095]])\nCoordinates:\n  * run_time          (run_time) datetime64[ns] 80B 2023-01-01 ... 2023-01-10\n  * forecast_horizon  (forecast_horizon) object 24B 't+1' 't+2' 't+3'xarray.DataArray'obs'forecast_horizon: 3run_time: 10nan 18.83 17.56 10.36 45.57 58.72 ... 21.34 83.68 74.74 38.42 98.02array([[        nan, 18.82944742, 17.56488779, 10.3552448 , 45.56872661,\n        58.71988735, 57.17550098, 21.34079622, 83.68233322, 74.73807991],\n       [18.82944742, 17.56488779, 10.3552448 , 45.56872661, 58.71988735,\n        57.17550098, 21.34079622, 83.68233322, 74.73807991, 38.41755211],\n       [17.56488779, 10.3552448 , 45.56872661, 58.71988735, 57.17550098,\n        21.34079622, 83.68233322, 74.73807991, 38.41755211, 98.01940095]])Coordinates: (2)run_time(run_time)datetime64[ns]2023-01-01 ... 2023-01-10array(['2023-01-01T00:00:00.000000000', '2023-01-02T00:00:00.000000000',\n       '2023-01-03T00:00:00.000000000', '2023-01-04T00:00:00.000000000',\n       '2023-01-05T00:00:00.000000000', '2023-01-06T00:00:00.000000000',\n       '2023-01-07T00:00:00.000000000', '2023-01-08T00:00:00.000000000',\n       '2023-01-09T00:00:00.000000000', '2023-01-10T00:00:00.000000000'],\n      dtype='datetime64[ns]')forecast_horizon(forecast_horizon)object't+1' 't+2' 't+3'array(['t+1', 't+2', 't+3'], dtype=object)Indexes: (2)run_timePandasIndexPandasIndex(DatetimeIndex(['2023-01-01', '2023-01-02', '2023-01-03', '2023-01-04',\n               '2023-01-05', '2023-01-06', '2023-01-07', '2023-01-08',\n               '2023-01-09', '2023-01-10'],\n              dtype='datetime64[ns]', name='run_time', freq=None))forecast_horizonPandasIndexPandasIndex(Index(['t+1', 't+2', 't+3'], dtype='object', name='forecast_horizon'))Attributes: (0)\n\n\n\nsource\n\n\nForecastTimeHandler.join\n\n ForecastTimeHandler.join (pred:pandas.core.frame.DataFrame,\n                           obs:pandas.core.frame.DataFrame,\n                           stack_pred:bool=True, **kwargs)\n\nJoin the predictions and observations by forecast time\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\npred\nDataFrame\n\nPredictions\n\n\nobs\nDataFrame\n\nObservations\n\n\nstack_pred\nbool\nTrue\nSet to false if predictions already have forecast time as index\n\n\nkwargs\nVAR_KEYWORD\n\n\n\n\nReturns\nDataFrame\n\n\n\n\n\nFinally we can also join the data by forecast time index\n\njoint = time_handler.join(forecast, observations, stack_pred=True)\njoint.head(3)\n\n\n\n\n\n\n\n\n\n\npred\nobs\n\n\nrun_time\nforecast_horizon\nforecast_time\n\n\n\n\n\n\n2023-01-01\nt+1\n2023-01-02\n99.727885\nNaN\n\n\nt+2\n2023-01-03\n24.053605\n18.829447\n\n\nt+3\n2023-01-04\n31.289456\n17.564888\n\n\n\n\n\n\n\n\nsource\n\n\nForecastTimeHandler.join_as_xarray\n\n ForecastTimeHandler.join_as_xarray (pred:pandas.core.frame.DataFrame,\n                                     obs:pandas.core.frame.DataFrame,\n                                     stack_pred:bool=True, **kwargs)\n\nAlign the predictions and observations by forecast horizon and join them as xarray\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\npred\nDataFrame\n\nPredictions\n\n\nobs\nDataFrame\n\nObservations\n\n\nstack_pred\nbool\nTrue\nSet to false if predictions already have forecast time as index\n\n\nkwargs\nVAR_KEYWORD\n\n\n\n\nReturns\nDataArray\n\n\n\n\n\nAnd do the same thing and get a xarray dataset as output\n\ntime_handler.join_as_xarray(forecast, observations)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n&lt;xarray.DataArray (forecast_horizon: 3, run_time: 10)&gt; Size: 240B\narray([[99.72788525, 55.55480681, 39.30502169, 30.78482329, 68.89605663,\n        79.72856186, 62.07890179, 97.21806371, 91.59694962, 30.79350721],\n       [24.05360513, 86.47304606, 15.84306704, 61.11781718, 28.53256563,\n        24.72953579, 66.7879685 , 52.78458146, 79.66385079, 18.87182379],\n       [31.28945581, 59.98303617, 66.07988317, 88.11419986, 15.28379592,\n        19.63154885, 52.52554298, 95.3972403 , 81.32514287, 69.13172239]])\nCoordinates:\n  * run_time          (run_time) datetime64[ns] 80B 2023-01-01 ... 2023-01-10\n  * forecast_horizon  (forecast_horizon) object 24B 't+1' 't+2' 't+3'xarray.DataArrayforecast_horizon: 3run_time: 1099.73 55.55 39.31 30.78 68.9 79.73 ... 19.63 52.53 95.4 81.33 69.13array([[99.72788525, 55.55480681, 39.30502169, 30.78482329, 68.89605663,\n        79.72856186, 62.07890179, 97.21806371, 91.59694962, 30.79350721],\n       [24.05360513, 86.47304606, 15.84306704, 61.11781718, 28.53256563,\n        24.72953579, 66.7879685 , 52.78458146, 79.66385079, 18.87182379],\n       [31.28945581, 59.98303617, 66.07988317, 88.11419986, 15.28379592,\n        19.63154885, 52.52554298, 95.3972403 , 81.32514287, 69.13172239]])Coordinates: (2)run_time(run_time)datetime64[ns]2023-01-01 ... 2023-01-10array(['2023-01-01T00:00:00.000000000', '2023-01-02T00:00:00.000000000',\n       '2023-01-03T00:00:00.000000000', '2023-01-04T00:00:00.000000000',\n       '2023-01-05T00:00:00.000000000', '2023-01-06T00:00:00.000000000',\n       '2023-01-07T00:00:00.000000000', '2023-01-08T00:00:00.000000000',\n       '2023-01-09T00:00:00.000000000', '2023-01-10T00:00:00.000000000'],\n      dtype='datetime64[ns]')forecast_horizon(forecast_horizon)object't+1' 't+2' 't+3'array(['t+1', 't+2', 't+3'], dtype=object)Indexes: (2)run_timePandasIndexPandasIndex(DatetimeIndex(['2023-01-01', '2023-01-02', '2023-01-03', '2023-01-04',\n               '2023-01-05', '2023-01-06', '2023-01-07', '2023-01-08',\n               '2023-01-09', '2023-01-10'],\n              dtype='datetime64[ns]', name='run_time', freq=None))forecast_horizonPandasIndexPandasIndex(Index(['t+1', 't+2', 't+3'], dtype='object', name='forecast_horizon'))Attributes: (0)",
+    "crumbs": [
+      "Utils",
+      "Time"
+    ]
+  },
+  {
+    "objectID": "dataprep.season.html",
+    "href": "dataprep.season.html",
+    "title": "Seasonal Handling",
+    "section": "",
+    "text": "Data loading\n\ndata = pd.read_csv(\n    DATA_PATH/'hydro_example.csv', \n    usecols=['time', OBS_COL], \n    index_col='time',\n    converters={\"time\": pd.to_datetime}\n    )\ndata = data['2012-01-01':]\n\n\n\nSeason data handling\n\nsource\n\n\nSeasonalityHandler\n\n SeasonalityHandler ()\n\n*Class to handle seasonality operations in time series data.\nThis class provides methods to: - Compute seasonal patterns based on week of year - Remove seasonality from data - Add seasonality back to data\nAttributes: seasonal_pattern: pd.DataFrame The computed seasonal pattern, indexed by week of year*\nFirst we create an instance:\n\nseasonality_handler = SeasonalityHandler()\n\n\nsource\n\n\nSeasonalityHandler.compute_seasonal_pattern\n\n SeasonalityHandler.compute_seasonal_pattern\n                                              (data:pandas.core.frame.Data\n                                              Frame)\n\nCompute mean values for each week of the year to capture seasonal patterns.\nNow we compute the seasonality of the data as follows:\n\nseason = seasonality_handler.compute_seasonal_pattern(data)\n\n\nsource\n\n\nSeasonalityHandler.remove_seasonality\n\n SeasonalityHandler.remove_seasonality (data:pandas.core.frame.DataFrame)\n\nRemove seasonality from the data.\nIts also possible to remove the seasonality to our data as follows\n\ndeseasonalized_data = seasonality_handler.remove_seasonality(data)\ndeseasonalized_data.plot()\n\n\n\n\n\n\n\n\n\nsource\n\n\nSeasonalityHandler.add_seasonality\n\n SeasonalityHandler.add_seasonality (data:pandas.core.frame.DataFrame)\n\nAdd seasonality back to the data.\nWe can also add the seasonality back\n\nseasonality_handler.add_seasonality(deseasonalized_data).head(3)\n\n\n\n\n\n\n\n\nQ_obs\n\n\ntime\n\n\n\n\n\n2012-01-01\n68.839996\n\n\n2012-01-02\n67.500000\n\n\n2012-01-03\n67.349998\n\n\n\n\n\n\n\n\nsource\n\n\nSeasonalityHandler.append_season\n\n SeasonalityHandler.append_season (data:pandas.core.frame.DataFrame)\n\nAppend the seasonality to the data.\nOr we can append the seasonal data as a new column as follows\n\nseasonality_handler.append_season(data).head(3)\n\n\n\n\n\n\n\n\nQ_obs\nseason\n\n\ntime\n\n\n\n\n\n\n2012-01-01\n68.839996\n90.025156\n\n\n2012-01-02\n67.500000\n79.543198\n\n\n2012-01-03\n67.349998\n79.543198",
+    "crumbs": [
+      "Data Preparation",
+      "Seasonal Handling"
+    ]
+  },
+  {
+    "objectID": "dataprep.region.html",
+    "href": "dataprep.region.html",
+    "title": "Region",
+    "section": "",
+    "text": "source",
+    "crumbs": [
+      "Data Preparation",
+      "Region"
+    ]
+  },
+  {
+    "objectID": "dataprep.region.html#example",
+    "href": "dataprep.region.html#example",
+    "title": "Region",
+    "section": "Example",
+    "text": "Example\n\nInput\n\n\n\n\n\n\n\n\n\n\n\nOutput",
+    "crumbs": [
+      "Data Preparation",
+      "Region"
+    ]
+  },
+  {
+    "objectID": "deepl.core.html",
+    "href": "deepl.core.html",
+    "title": "Fundamental functions for time series modeling using deep learning methods in pytorch",
+    "section": "",
+    "text": "from pathlib import Path\n\n\nDATA_PATH = Path(\"../testing_data\")",
+    "crumbs": [
+      "Deep Learning",
+      "Fundamental functions for time series modeling using deep learning methods in pytorch"
+    ]
+  },
+  {
+    "objectID": "deepl.core.html#data-preprocessing",
+    "href": "deepl.core.html#data-preprocessing",
+    "title": "Fundamental functions for time series modeling using deep learning methods in pytorch",
+    "section": "Data Preprocessing",
+    "text": "Data Preprocessing\nWe will first open the data\n\ndata =pd.read_csv(DATA_PATH / \"hydro_example.csv\", parse_dates=True, index_col=\"time\")\ndata.head(5)\n\nNow we will split data into coherent groups\n\nsource\n\nsplit_by_date\n\n split_by_date (data:pandas.core.frame.DataFrame, val_dates:tuple,\n                test_dates:tuple)\n\nSplit time series data into train, validation and test sets based on date ranges.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\ndata\nDataFrame\nInput dataframe containing time series data\n\n\nval_dates\ntuple\nTuple of (start_date, end_date) for validation set\n\n\ntest_dates\ntuple\nTuple of (start_date, end_date) for test set\n\n\nReturns\ntuple\n\n\n\n\n\ntrain, valid, test = split_by_date(data, val_dates=(\"2012-01-01\", \"2012-12-31\"), test_dates=(\"2013-01-01\", \"2014-12-31\"))\n\nNow lets define the feature and the target columns and divide data in feature and targets\n\nx_cols = [\"smoothed_rain\",\"Q_mgb\"]\ny_cols = [\"Q_obs\"]\n\nx_train, y_train = train[x_cols], train[y_cols]\nx_valid, y_valid = valid[x_cols], valid[y_cols]\nx_test, y_test = test[x_cols], test[y_cols]\n\nNow we will fit the scaler based only on train data. This ensures that: 1. No information from the validation/test data sets leaks to into the scaling process 2. All data is scaled consistently using the same parameters 3. The model sees new data scaled in the same way as it was trained\n\nfeature_scaler, target_scaler = RobustScaler(), RobustScaler()\n_, _ = feature_scaler.fit_transform(x_train), target_scaler.fit_transform(y_train)\n\nFinally, we’ll create a custom dataset class to handle our time series data. This class will create sequences of input features (simulation discharge and rainfall) and target values (observed discharge).\n\nsource\n\n\nHydroDataset\n\n HydroDataset (x:pandas.core.frame.DataFrame,\n               y:pandas.core.frame.DataFrame, ctx_len:int,\n               pred_len:int=10, x_transform:&lt;built-\n               infunctioncallable&gt;=None, y_transform:&lt;built-\n               infunctioncallable&gt;=None)\n\n*An abstract class representing a :class:Dataset.\nAll datasets that represent a map from keys to data samples should subclass it. All subclasses should overwrite :meth:__getitem__, supporting fetching a data sample for a given key. Subclasses could also optionally overwrite :meth:__len__, which is expected to return the size of the dataset by many :class:~torch.utils.data.Sampler implementations and the default options of :class:~torch.utils.data.DataLoader. Subclasses could also optionally implement :meth:__getitems__, for speedup batched samples loading. This method accepts list of indices of samples of batch and returns list of samples.\n.. note:: :class:~torch.utils.data.DataLoader by default constructs an index sampler that yields integral indices. To make it work with a map-style dataset with non-integral indices/keys, a custom sampler must be provided.*\nWe can easily instantiate the dataset as follows\n\ntrain_dataset = HydroDataset(\n    x=x_train,\n    y=y_train,\n    ctx_len=1,\n    pred_len=1,\n    x_transform=feature_scaler.transform,\n    y_transform=target_scaler.transform\n    )\n\nThe total training samples are\n\nlen(train_dataset)\n\nIs it possible to easly get a training sample as follows:\n\ntrain_dataset[5]\n\nAnd also to the the t+0 for any item\n\ntrain_dataset.get_t0(1000)",
+    "crumbs": [
+      "Deep Learning",
+      "Fundamental functions for time series modeling using deep learning methods in pytorch"
+    ]
+  },
+  {
+    "objectID": "deepl.core.html#model-example",
+    "href": "deepl.core.html#model-example",
+    "title": "Fundamental functions for time series modeling using deep learning methods in pytorch",
+    "section": "Model example",
+    "text": "Model example\nFor the sake of example, we will define the simplest NN we possibly can in PyTorch, which is a simple linear model.\n\nclass SimpleNN(nn.Module):\n    def __init__(self, input_dim, output_dim):\n        super(SimpleNN, self).__init__()\n        self.linear = nn.Linear(input_dim, output_dim)\n\n    def forward(self, x):\n        batch_size = x.shape[0]\n        x = x.reshape(batch_size, -1)\n        out = self.linear(x)\n        return out",
+    "crumbs": [
+      "Deep Learning",
+      "Fundamental functions for time series modeling using deep learning methods in pytorch"
+    ]
+  },
+  {
+    "objectID": "deepl.core.html#model-training",
+    "href": "deepl.core.html#model-training",
+    "title": "Fundamental functions for time series modeling using deep learning methods in pytorch",
+    "section": "Model training",
+    "text": "Model training\nNow we will define a basic learner class to handle the training process. This class will be used to train the model and evaluate its performance.\n\nsource\n\nLearner\n\n Learner (model:torch.nn.modules.module.Module,\n          train_loader:torch.utils.data.dataloader.DataLoader,\n          val_loader:torch.utils.data.dataloader.DataLoader,\n          criterion:torch.nn.modules.module.Module=MSELoss(),\n          optimizer:torch.optim.optimizer.Optimizer=&lt;class\n          'torch.optim.adam.Adam'&gt;, log_dir:str=None, verbose:bool=True)\n\nInitialize self. See help(type(self)) for accurate signature.\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nmodel\nModule\n\nmodel to train\n\n\ntrain_loader\nDataLoader\n\ndata loader for training data\n\n\nval_loader\nDataLoader\n\ndata loader for validation data\n\n\ncriterion\nModule\nMSELoss()\nloss function to optimize\n\n\noptimizer\nOptimizer\nAdam\noptimizer class to use for training\n\n\nlog_dir\nstr\nNone\ndirectory to save tensorboard logs,\n\n\nverbose\nbool\nTrue\nwhether to print training progress\n\n\nReturns\nNone",
+    "crumbs": [
+      "Deep Learning",
+      "Fundamental functions for time series modeling using deep learning methods in pytorch"
+    ]
+  },
+  {
+    "objectID": "deepl.core.html#model-training-example",
+    "href": "deepl.core.html#model-training-example",
+    "title": "Fundamental functions for time series modeling using deep learning methods in pytorch",
+    "section": "Model training example",
+    "text": "Model training example\nLets see a simple example of how we can train a neural network.\nFirst we will create our Datasets and Dataloarders based on the data we splitted above\n\nbatch_size = 32\n\ncontext_len=3\nprediction_len=2\nx_transform=feature_scaler.transform\ny_transform=target_scaler.transform\n\ntrain_dataset = HydroDataset(x=x_train, y=y_train, ctx_len=context_len, pred_len=prediction_len, x_transform=x_transform, y_transform=y_transform)\nvalid_dataset = HydroDataset(x=x_valid, y=y_valid, ctx_len=context_len, pred_len=prediction_len, x_transform=x_transform, y_transform=y_transform)\ntest_dataset = HydroDataset(x=x_test, y=y_test, ctx_len=context_len, pred_len=prediction_len, x_transform=x_transform, y_transform=y_transform)\n\ntrain_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)\nvalid_loader = DataLoader(valid_dataset, batch_size=batch_size)\ntest_loader = DataLoader(test_dataset, batch_size=batch_size)\n\nWe can now instantiate the model\n\nmodel = SimpleNN(input_dim=len(x_cols)*context_len, output_dim=prediction_len)\n\nAnd finally we can instantiate the learner and fit our data\n\nlearner = Learner(model=model, train_loader=train_loader, val_loader=valid_loader)\nlearner.fit(lr=0.001, epochs=3)\n\nLets now see the prediction. There are two possible ways. Predicting only the values.\n\ny_pred = learner.predict_values(test_loader)\n\nGetting the prediction with the timestamp and column name. This allow us also to scale back to the original values.\n\ny_pred = learner.predict(test_loader, inverse_transform=target_scaler.inverse_transform)\ny_pred.head(4)\n\nWe will now add the observation and the mgb simulation so we can plot the result.\n\ny_pred[\"obs\"] = y_test.loc[y_pred.index]\ny_pred[\"mgb\"] = x_test[\"Q_mgb\"].loc[y_pred.index]\ny_pred.plot()",
+    "crumbs": [
+      "Deep Learning",
+      "Fundamental functions for time series modeling using deep learning methods in pytorch"
+    ]
+  },
+  {
+    "objectID": "dataprep.features.html",
+    "href": "dataprep.features.html",
+    "title": "Feature and Targets",
+    "section": "",
+    "text": "source\n\nFeatureAndTargetGenerator\n\n FeatureAndTargetGenerator (context_len:int=10, target_len:int=10,\n                            poly_degree:int=1)\n\nTransforms time series data into feature matrices suitable for machine learning models. Creates lagged features using a sliding window and optionally generates polynomial features to capture non-linear relationships between variables. It also creates a target vector for the number of timesteps to predict.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ncontext_len\nint\n10\nnumber of previous timesteps to use as features\n\n\ntarget_len\nint\n10\nnumber of timesteps to predict\n\n\npoly_degree\nint\n1\ndegree of polynomial features\n\n\n\nWe will first open the data\n\nDATA_PATH = Path(\"../testing_data\")\n\ndata = pd.read_csv(\n    DATA_PATH/'hydro_example.csv', \n    usecols=['time', 'smoothed_rain', 'Q_mgb', 'Q_obs'], \n    index_col='time',\n    converters={\"time\": pd.to_datetime}\n    )\n\nThen we need to create an instance of the generator setting the context and the target length and the polynomial degree.\n\ngenerator = FeatureAndTargetGenerator(context_len=1, target_len=2, poly_degree=2)\n\nThen we can generate the feature and target matrixes as follows\n\nsource\n\n\nFeatureAndTargetGenerator.generate\n\n FeatureAndTargetGenerator.generate (df:pandas.core.frame.DataFrame,\n                                     x_col:list[str], y_col:list[str])\n\nGenerates a feature matrix and target vector from the input data.\n\nx_col, y_col = ['smoothed_rain','Q_mgb'], ['Q_obs']\ndata_x, data_y = generator.generate(data, x_col=x_col, y_col=y_col)\n\nThe generated data will look as follows\n\ndata_x.head(3)\n\n\n\n\n\n\n\n\n0\n1\n2\n3\n4\n5\n\n\ntime\n\n\n\n\n\n\n\n\n\n\n2012-01-01\n1.0\n0.299868\n15.22\n0.089921\n4.563995\n231.6484\n\n\n2012-01-02\n1.0\n0.299767\n14.84\n0.089860\n4.448548\n220.2256\n\n\n2012-01-03\n1.0\n0.265321\n14.48\n0.070395\n3.841846\n209.6704\n\n\n\n\n\n\n\n\ndata_y.head(3)\n\n\n\n\n\n\n\n\nt+1\nt+2\n\n\ntime\n\n\n\n\n\n\n2012-01-01\n67.500000\n67.349998\n\n\n2012-01-02\n67.349998\n66.800003\n\n\n2012-01-03\n66.800003\n66.739998",
+    "crumbs": [
+      "Data Preparation",
+      "Feature and Targets"
+    ]
+  }
+]
