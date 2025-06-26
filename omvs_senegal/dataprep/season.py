@@ -6,7 +6,7 @@ __all__ = ['SeasonalityHandler']
 # %% ../../nbs/03_dataprep.season.ipynb 2
 import pandas as pd
 
-# %% ../../nbs/03_dataprep.season.ipynb 7
+# %% ../../nbs/03_dataprep.season.ipynb 9
 class SeasonalityHandler:
     """Class to handle seasonality operations in time series data.
     
@@ -40,7 +40,7 @@ class SeasonalityHandler:
         deseasonalized = data.copy()
         deseasonalized = self._add_week_index(deseasonalized)
         deseasonalized = deseasonalized.join(self.seasonal_pattern, on='week')
-        deseasonalized = deseasonalized[data.columns] - deseasonalized["season"].values.reshape(-1, 1)
+        deseasonalized = deseasonalized[data.columns] - deseasonalized["season"].to_numpy().reshape(-1, 1)
         deseasonalized = self._remove_week_index(deseasonalized)
         return deseasonalized
     
@@ -52,7 +52,7 @@ class SeasonalityHandler:
         reseasonalized = data.copy()
         reseasonalized = self._add_week_index(reseasonalized)
         reseasonalized = reseasonalized.join(self.seasonal_pattern, on='week')
-        reseasonalized = reseasonalized[data.columns] + reseasonalized["season"].values.reshape(-1, 1)
+        reseasonalized = reseasonalized[data.columns] + reseasonalized["season"].to_numpy().reshape(-1, 1)
         reseasonalized = self._remove_week_index(reseasonalized)
         
         return reseasonalized
